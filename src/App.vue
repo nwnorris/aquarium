@@ -1,17 +1,19 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="center-container">
+      <AquariumBoard v-bind:boardWidth='10' v-bind:boardHeight='10'></AquariumBoard>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue';
+import AquariumBoard from './components/AquariumBoard.vue';
+import './css/reset.css';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
+    AquariumBoard,
   },
 };
 </script>
@@ -21,8 +23,12 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+.center-container {
+  width: 50vw;
+  height: 100vh;
+  border: 1px solid red;
+  margin: auto;
 }
 </style>
