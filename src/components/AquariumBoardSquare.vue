@@ -18,9 +18,9 @@ export default {
   },
   computed: {
     style() {
-      let color = 'gray';
-      if (this.square.selected) {
-        color = '#444';
+      let color = 'white';
+      if (this.square.selected()) {
+        color = '#ccc';
       }
       return `background-color: ${color};`;
     },
@@ -31,7 +31,7 @@ export default {
 <style lang="css" scoped>
   .square-container {
     display: grid;
-    border: 1px solid #666;
+    border: 1px solid #aaa;
     flex-grow: 1;
   }
   .square-container:hover {

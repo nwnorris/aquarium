@@ -15,6 +15,7 @@
 
 <script>
 import AquariumBoardSquare from './AquariumBoardSquare.vue';
+import AquariumPuzzle from '../js/AquariumPuzzle';
 
 export default {
   name: 'AquariumBoard',
@@ -32,10 +33,16 @@ export default {
     };
   },
   methods: {
-    squareSelect(squareId) {
-      console.log(squareId);
-      this.squares[squareId].selected = !this.squares[squareId].selected;
-      console.log(this.squares[squareId].selected);
+    squareSelect(squareID) {
+      //  this.squares[squareId].selected = !this.squares[squareId].selected;
+      const sid = parseInt(squareID, 10);
+      this.puzzle.handleSquare(sid);
+      //  this.updateActiveBlock();
+    },
+    updateActiveBlock() {
+      this.puzzle.activeBlock.forEach((square) => {
+        this.squares[square].selected = true;
+      });
     },
   },
   computed: {
@@ -45,7 +52,7 @@ export default {
     },
   },
   created() {
-    this.selected = [];
+    this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
   },
   mounted() {
     this.width = this.$refs.bc.clientWidth;
@@ -54,10 +61,14 @@ export default {
       ? Math.floor(this.width / this.boardWidth)
       : Math.floor(this.height / this.boardHeight);
     this.squares = [];
+    const puzz = this.puzzle;
     for (let i = 0; i < (this.boardWidth * this.boardHeight); i += 1) {
       this.squares.push({
         id: i,
-        selected: false,
+        puzzle: puzz,
+        selected() {
+          return this.puzzle.activeBlock.indexOf(this.id) >= 0;
+        },
       });
     }
   },
@@ -68,7 +79,6 @@ export default {
   .board-container {
     width: 100%;
     height: 100%;
-    background-color: gray;
     display: flex;
     justify-content: center;
     align-items: center;

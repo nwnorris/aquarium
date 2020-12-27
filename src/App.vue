@@ -8,7 +8,6 @@
 
 <script>
 import AquariumBoard from './components/AquariumBoard.vue';
-//  import AquariumPuzzle from './js/AquariumPuzzle';
 import './css/reset.css';
 
 //  const puzzle = new AquariumPuzzle('aq-0001.json');
