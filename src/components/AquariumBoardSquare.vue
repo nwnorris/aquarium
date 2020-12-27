@@ -1,5 +1,5 @@
 <template>
-  <div class="square-container" :style='squareStyle'>
+  <div class="square-container" v-on:click='handleClick($event)' :style='style'>
 
   </div>
 </template>
@@ -7,10 +7,22 @@
 <script>
 export default {
   name: 'AquariumBoardSquare',
-  props: ['width', 'height'],
+  props: ['width', 'height', 'square'],
+  methods: {
+    handleClick(event) {
+      this.$emit('square-select', event.target.id);
+    },
+  },
+  mounted() {
+    this.id = this.square.id;
+  },
   computed: {
-    squareStyle() {
-      return `min-width: ${this.$props.width}px; min-height: ${this.$props.height}px;`;
+    style() {
+      let color = 'gray';
+      if (this.square.selected) {
+        color = '#444';
+      }
+      return `background-color: ${color};`;
     },
   },
 };
@@ -18,8 +30,11 @@ export default {
 
 <style lang="css" scoped>
   .square-container {
-    display: inline-block;
-    border: 1px solid black;
+    display: grid;
+    border: 1px solid #666;
     flex-grow: 1;
+  }
+  .square-container:hover {
+    border: 1px solid red;
   }
 </style>

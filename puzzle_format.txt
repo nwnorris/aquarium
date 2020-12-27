@@ -1,0 +1,16 @@
+A puzzle's JSON should contain the following top-level items:
+  - size
+    [The grid dimensions of the puzzle]
+    x: Number
+    y: Number
+  - blocks
+    [List of blocks and the squares that make them up]
+    [
+      [SID0, SID1, ..., SIDN],
+      [SID0, SID1, ..., SIDN],
+      ...,
+      [SID0, SID1, ..., SIDN]
+    ]
+
+Puzzles should be validated on load.
+A puzzle is valid if all square IDs are allocated to precisely one block, and all squares are adjacent to at least one other square in their block.
