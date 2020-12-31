@@ -87,7 +87,10 @@ class AquariumPuzzle {
 
   handleSquare(sid) {
     const squareID = this.validateSquareID(sid);
-    if (this.activeBlock.indexOf(squareID) >= 0) {
+    if (this.isAnyBlockMember(squareID) && this.blockMembership[squareID] !== this.activeBlockId) {
+      this.saveActiveBlock();
+      this.selectBlock(squareID);
+    } else if (this.activeBlock.indexOf(squareID) >= 0) {
       this.removeSquare(squareID);
     } else {
       this.addSquare(squareID);

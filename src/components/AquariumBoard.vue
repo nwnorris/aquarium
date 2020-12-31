@@ -1,5 +1,5 @@
 <template>
-  <div class="board-container" ref="bc">
+  <div class="board-container" ref="bc" @keyup='nextBlock'>
     <div class="board-holder" ref="holder" :style='computedStyle'>
       <AquariumBoardSquare
       :width='squareSize'
@@ -16,6 +16,7 @@
 <script>
 import AquariumBoardSquare from './AquariumBoardSquare.vue';
 import AquariumPuzzle from '../js/AquariumPuzzle';
+import '../css/AquariumBoard.css';
 
 export default {
   name: 'AquariumBoard',
@@ -34,15 +35,25 @@ export default {
   },
   methods: {
     squareSelect(squareID) {
-      //  this.squares[squareId].selected = !this.squares[squareId].selected;
       const sid = parseInt(squareID, 10);
       this.puzzle.handleSquare(sid);
-      //  this.updateActiveBlock();
     },
     updateActiveBlock() {
       this.puzzle.activeBlock.forEach((square) => {
         this.squares[square].selected = true;
       });
+    },
+    handleKey(e) {
+      switch (e.key) {
+        case 'Enter':
+          this.nextBlock();
+          break;
+        default:
+          break;
+      }
+    },
+    nextBlock() {
+      this.puzzle.nextBlock();
     },
   },
   computed: {
@@ -58,6 +69,11 @@ export default {
   created() {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
     console.log(this.boardWidth, this.boardHeight);
+    //  Add event listeners that Vue can't normally handle (key events on non-form/input elemenmts)
+    document.addEventListener('keyup', this.handleKey);
+  },
+  destroyed() {
+    document.removeEventListener('keyup', this.handleKey);
   },
   mounted() {
     this.width = this.$refs.bc.clientWidth;
@@ -87,16 +103,5 @@ export default {
 </script>
 
 <style lang="css" scoped>
-  .board-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .board-holder {
-    margin: 0;
-    padding: 0;
-    display: grid;
-  }
+
 </style>
