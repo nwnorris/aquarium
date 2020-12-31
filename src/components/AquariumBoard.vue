@@ -74,6 +74,12 @@ export default {
         selected() {
           return this.puzzle.activeBlock.indexOf(this.id) >= 0;
         },
+        connections() {
+          return this.puzzle.connections[this.id];
+        },
+        isAnyBlockMember() {
+          return this.puzzle.isAnyBlockMember(this.id);
+        },
       });
     }
   },

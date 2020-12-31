@@ -22,7 +22,22 @@ export default {
       if (this.square.selected()) {
         color = '#ccc';
       }
-      return `background-color: ${color};`;
+      const borders = [];
+      const borderColor = 'black';
+      //  A direction is connected if it exists in the connection map,
+      //  unconnected edges get a border (edge of the block)
+      const unconnectedDirs = ['top', 'bottom', 'left', 'right'];
+      const connectedDirs = Object.keys(this.square.connections());
+      if (this.square.isAnyBlockMember()) {
+        unconnectedDirs.forEach((dir) => {
+          if (connectedDirs.indexOf(dir) === -1) {
+            borders.push(`border-${dir}: 2px solid ${borderColor}`);
+          }
+        });
+      }
+      const bg = `background-color: ${color};`;
+      const output = [bg].concat(borders).join(';');
+      return output;
     },
   },
 };

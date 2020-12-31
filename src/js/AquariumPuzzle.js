@@ -3,10 +3,11 @@ class AquariumPuzzle {
     if (!data) {
       //  Create new puzzle
       this.blocks = [];
+      this.activeBlockId = 0;
       this.width = width;
       this.height = height;
       this.numSquares = width * height;
-      this.used = {};
+      this.blockMembership = {};
       this.newBlock();
       this.connections = {};
       //  Initialize connection list
@@ -30,22 +31,26 @@ class AquariumPuzzle {
   //  Is square 1 adjacent to square 2?
   isAdjacent(square1, square2) {
     const diff = square1 - square2;
-    return [Math.abs(diff) === 1 || Math.abs(diff) === this.width, diff];
+    const verticalAdj = Math.abs(diff) === this.width;
+    const edgeMap = [square1, square2].map((item) => item % this.width);
+    const isEdgeConnection = edgeMap.indexOf(0) > -1 && edgeMap.indexOf(this.width - 1) > -1;
+    const horizontalAdj = Math.abs(diff) === 1 && !isEdgeConnection;
+    return [horizontalAdj || verticalAdj, diff];
   }
 
   //  Simple way to access the opposite direction given a string (usually from a object key)
   static oppositeDirection(dirStr) {
     switch (dirStr) {
-      case 'b':
-        return 't';
-      case 't':
-        return 'b';
-      case 'r':
-        return 'l';
-      case 'l':
-        return 'r';
+      case 'bottom':
+        return 'top';
+      case 'top':
+        return 'bottom';
+      case 'right':
+        return 'left';
+      case 'left':
+        return 'right';
       default:
-        return 'z';
+        return 'error';
     }
   }
 
@@ -61,16 +66,16 @@ class AquariumPuzzle {
         const direction = result[1];
         switch (direction) {
           case 1:
-            connected.l = square;
+            connected.left = square;
             break;
           case -1:
-            connected.r = square;
+            connected.right = square;
             break;
           case this.height:
-            connected.t = square;
+            connected.top = square;
             break;
           case (this.height * -1):
-            connected.b = square;
+            connected.bottom = square;
             break;
           default:
             break;
@@ -89,16 +94,22 @@ class AquariumPuzzle {
     }
   }
 
+  isAnyBlockMember(sid) {
+    return sid in this.blockMembership;
+  }
+
   //  Add square to active block, removing from other block if already assigned.
   addSquare(squareID) {
     const result = this.canBeAddedToActiveBlock(squareID);
     const valid = result[0];
     const conn = result[1];
     if (valid) {
-      if (squareID in this.used) {
-        const arr = this.used[squareID];
-        arr.splice(arr.indexOf(squareID), 1);
+      if (this.isAnyBlockMember(squareID)) {
+        const block = this.blocks[this.blockMembership[squareID]];
+        block.splice(block.indexOf(squareID), 1);
       }
+      this.blockMembership[squareID] = this.activeBlockId;
+      console.log(this.blockMembership[squareID]);
       this.activeBlock.push(squareID);
       //  Bidirectional connection reference
       Object.entries(conn).forEach((item) => {
@@ -113,10 +124,13 @@ class AquariumPuzzle {
   //  Assume that sid was already checked to be a member of the active block.
   removeSquare(squareID) {
     this.activeBlock.splice(this.activeBlock.indexOf(squareID), 1);
-    Object.values(this.connections[squareID]).forEach((otherSquare) => {
-      delete this.connections[otherSquare][squareID];
+    Object.entries(this.connections[squareID]).forEach((item) => {
+      const dir = item[0];
+      const otherSquare = item[1];
+      delete this.connections[otherSquare][AquariumPuzzle.oppositeDirection(dir)];
     });
     this.connections[squareID] = {};
+    delete this.blockMembership[squareID];
   }
 
   removeConnection(s1, s2) {
@@ -124,9 +138,10 @@ class AquariumPuzzle {
     if (index >= 0) this.connections[s1].splice(index, 1);
   }
 
-  selectBlock(squareID) {
+  selectBlock(squareId) {
     this.saveActiveBlock();
-    this.activeBlock = this.used[squareID];
+    this.activeBlockId = this.blockMembership[squareId];
+    this.activeBlock = this.blocks[this.activeBlockId];
   }
 
   nextBlock() {
@@ -136,12 +151,13 @@ class AquariumPuzzle {
 
   newBlock() {
     this.activeBlock = [];
+    this.activeBlockId = this.blocks.length;
   }
 
   saveActiveBlock() {
     this.blocks.push(this.activeBlock);
     this.activeBlock.forEach((squareID) => {
-      this.used[squareID] = this.activeBlock;
+      this.blockMembership[squareID] = this.activeBlockId;
     });
   }
 
