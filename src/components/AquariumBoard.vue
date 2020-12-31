@@ -1,6 +1,6 @@
 <template>
   <div class="board-container" ref="bc">
-    <div class="board-holder" ref="holder" :style='computedWidth'>
+    <div class="board-holder" ref="holder" :style='computedStyle'>
       <AquariumBoardSquare
       :width='squareSize'
       :height='squareSize'
@@ -46,13 +46,18 @@ export default {
     },
   },
   computed: {
-    computedWidth() {
+    computedStyle() {
       const size = this.squareSize ? this.squareSize : 0;
-      return `width: ${size * this.$props.boardWidth}px; height: ${size * this.$props.boardWidth}px;`;
+      const width = `width: ${size * this.$props.boardWidth}px;`;
+      const height = `height: ${size * this.$props.boardWidth}px;`;
+      const col = `grid-template-columns: repeat(${this.boardWidth}, 1fr);`;
+      const row = `grid-template-rows: repeat(${this.boardHeight}, 1fr);`;
+      return [width, height, col, row].join(' ');
     },
   },
   created() {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
+    console.log(this.boardWidth, this.boardHeight);
   },
   mounted() {
     this.width = this.$refs.bc.clientWidth;
@@ -87,7 +92,5 @@ export default {
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
   }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="center-container">
-      <AquariumBoard v-bind:boardWidth='10' v-bind:boardHeight='10'></AquariumBoard>
+      <AquariumBoard :boardWidth='w' :boardHeight='h'></AquariumBoard>
     </div>
   </div>
 </template>
@@ -16,6 +16,12 @@ export default {
   name: 'App',
   components: {
     AquariumBoard,
+  },
+  data() {
+    return {
+      w: 5,
+      h: 5,
+    };
   },
 };
 </script>

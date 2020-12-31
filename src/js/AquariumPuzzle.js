@@ -3,14 +3,15 @@ class AquariumPuzzle {
     if (!data) {
       //  Create new puzzle
       this.blocks = [];
-      this.size = [width, height];
+      this.width = width;
+      this.height = height;
       this.numSquares = width * height;
       this.used = {};
       this.newBlock();
       this.connections = {};
       //  Initialize connection list
       [...Array(this.numSquares).keys()].forEach((index) => {
-        this.connections[index] = [];
+        this.connections[index] = {};
       });
     } else {
       //  Load puzzle from supplied JSON
@@ -29,18 +30,51 @@ class AquariumPuzzle {
   //  Is square 1 adjacent to square 2?
   isAdjacent(square1, square2) {
     const diff = square1 - square2;
-    return Math.abs(diff) === 1 || Math.abs(diff) === this.size[0];
+    return [Math.abs(diff) === 1 || Math.abs(diff) === this.width, diff];
+  }
+
+  //  Simple way to access the opposite direction given a string (usually from a object key)
+  static oppositeDirection(dirStr) {
+    switch (dirStr) {
+      case 'b':
+        return 't';
+      case 't':
+        return 'b';
+      case 'r':
+        return 'l';
+      case 'l':
+        return 'r';
+      default:
+        return 'z';
+    }
   }
 
   canBeAddedToActiveBlock(sid) {
     const squareID = this.validateSquareID(sid);
     let valid = this.activeBlock.length === 0;
-    const connected = [];
+    const connected = {};
     this.activeBlock.forEach((square) => {
+      //  result = (adjacent, direction)
       const result = this.isAdjacent(squareID, square);
-      if (result) {
+      if (result[0]) {
         valid = true;
-        connected.push(square);
+        const direction = result[1];
+        switch (direction) {
+          case 1:
+            connected.l = square;
+            break;
+          case -1:
+            connected.r = square;
+            break;
+          case this.height:
+            connected.t = square;
+            break;
+          case (this.height * -1):
+            connected.b = square;
+            break;
+          default:
+            break;
+        }
       }
     });
     return [valid, connected];
@@ -58,17 +92,20 @@ class AquariumPuzzle {
   //  Add square to active block, removing from other block if already assigned.
   addSquare(squareID) {
     const result = this.canBeAddedToActiveBlock(squareID);
-    const conn = result[1];
     const valid = result[0];
+    const conn = result[1];
     if (valid) {
       if (squareID in this.used) {
         const arr = this.used[squareID];
         arr.splice(arr.indexOf(squareID), 1);
       }
       this.activeBlock.push(squareID);
-      conn.forEach((otherSquare) => {
-        this.connections[squareID].push(otherSquare);
-        this.connections[otherSquare].push(squareID);
+      //  Bidirectional connection reference
+      Object.entries(conn).forEach((item) => {
+        const k = item[0];
+        const v = item[1];
+        this.connections[squareID][k] = v;
+        this.connections[v][AquariumPuzzle.oppositeDirection(k)] = squareID;
       });
     }
   }
@@ -76,10 +113,10 @@ class AquariumPuzzle {
   //  Assume that sid was already checked to be a member of the active block.
   removeSquare(squareID) {
     this.activeBlock.splice(this.activeBlock.indexOf(squareID), 1);
-    this.connections[squareID].forEach((otherSquare) => {
-      this.removeConnection(otherSquare, squareID);
+    Object.values(this.connections[squareID]).forEach((otherSquare) => {
+      delete this.connections[otherSquare][squareID];
     });
-    this.connections[squareID] = [];
+    this.connections[squareID] = {};
   }
 
   removeConnection(s1, s2) {
@@ -111,8 +148,8 @@ class AquariumPuzzle {
   toJSON() {
     const output = {
       size: {
-        x: this.size[0],
-        y: this.size[1],
+        x: this.width,
+        y: this.height,
       },
       blocks: this.blocks,
     };
@@ -122,12 +159,13 @@ class AquariumPuzzle {
 
   validate(puzzleJSON) {
     //  Validate size
-    this.size = [puzzleJSON.size.x, puzzleJSON.size.y];
-    if (!(this.size[0] && this.size[1])) {
+    this.width = puzzleJSON.size.x;
+    this.height = puzzleJSON.size.y;
+    if (!(this.width && this.height)) {
       throw new Error(`Invalid size in puzzle ${this.ID}`);
     }
     const usedSquares = {};
-    const totalSize = this.size[0] * this.size[1];
+    const totalSize = this.width * this.height;
     //  Check square duplication
     puzzleJSON.blocks.forEach((block) => {
       block.forEach((squareID) => {
