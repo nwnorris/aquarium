@@ -46,10 +46,11 @@ export default {
 <style lang="css" scoped>
   .square-container {
     display: grid;
-    border: 1px solid #aaa;
+    border: 1px solid #ddd;
     flex-grow: 1;
+    transition: border 0.2s;
   }
   .square-container:hover {
-    border: 1px solid red;
+    border: 1px solid #349878;
   }
 </style>

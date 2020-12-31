@@ -36,7 +36,8 @@ export default {
 .center-container {
   width: 50vw;
   height: 100vh;
-  border: 1px solid red;
+  border: 1px solid blue;
   margin: auto;
+  padding: 25px;
 }
 </style>
