@@ -6,6 +6,7 @@ class AquariumPuzzle {
       this.activeBlockId = 0;
       this.width = width;
       this.height = height;
+      this.shiftPressed = false;
       this.numSquares = width * height;
       this.blockMembership = {};
       this.newBlock();
@@ -85,20 +86,28 @@ class AquariumPuzzle {
     return [valid, connected];
   }
 
+  isAnyBlockMember(sid) {
+    return sid in this.blockMembership;
+  }
+
+  getBlockFromSquare(squareID) {
+    return this.blocks[this.blockMembership[squareID]];
+  }
+
   handleSquare(sid) {
     const squareID = this.validateSquareID(sid);
     if (this.isAnyBlockMember(squareID) && this.blockMembership[squareID] !== this.activeBlockId) {
-      this.saveActiveBlock();
-      this.selectBlock(squareID);
+      if (this.shiftPressed) {
+        this.stealSquare(squareID);
+      } else {
+        this.saveActiveBlock();
+        this.selectBlock(squareID);
+      }
     } else if (this.activeBlock.indexOf(squareID) >= 0) {
       this.removeSquare(squareID);
     } else {
       this.addSquare(squareID);
     }
-  }
-
-  isAnyBlockMember(sid) {
-    return sid in this.blockMembership;
   }
 
   //  Add square to active block, removing from other block if already assigned.
@@ -124,9 +133,24 @@ class AquariumPuzzle {
     }
   }
 
+  //  Take square that is part of another block and join it to the active block
+  stealSquare(squareID) {
+    this.removeSquareFromBlock(squareID);
+    this.addSquare(squareID);
+  }
+
   //  Assume that sid was already checked to be a member of the active block.
   removeSquare(squareID) {
-    this.activeBlock.splice(this.activeBlock.indexOf(squareID), 1);
+    this.removeSquareFromBlock(squareID, this.activeBlock);
+  }
+
+  //  Disassocaite square from member block
+  removeSquareFromBlock(squareID, block = null) {
+    let b = block;
+    if (!block) {
+      b = this.getBlockFromSquare(squareID);
+    }
+    b.splice(b.indexOf(squareID), 1);
     Object.entries(this.connections[squareID]).forEach((item) => {
       const dir = item[0];
       const otherSquare = item[1];

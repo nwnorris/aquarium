@@ -43,10 +43,22 @@ export default {
         this.squares[square].selected = true;
       });
     },
-    handleKey(e) {
+    handleKeyDown(e) {
+      switch (e.key) {
+        case 'Shift':
+          this.puzzle.shiftPressed = true;
+          break;
+        default:
+          break;
+      }
+    },
+    handleKeyUp(e) {
       switch (e.key) {
         case 'Enter':
           this.nextBlock();
+          break;
+        case 'Shift':
+          this.puzzle.shiftPressed = false;
           break;
         default:
           break;
@@ -68,12 +80,15 @@ export default {
   },
   created() {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
+    this.shiftPressed = false;
     console.log(this.boardWidth, this.boardHeight);
     //  Add event listeners that Vue can't normally handle (key events on non-form/input elemenmts)
-    document.addEventListener('keyup', this.handleKey);
+    document.addEventListener('keyup', this.handleKeyUp);
+    document.addEventListener('keydown', this.handleKeyDown);
   },
   destroyed() {
-    document.removeEventListener('keyup', this.handleKey);
+    document.removeEventListener('keyup', this.handleKeyUp);
+    document.removeEventListener('keydown', this.handleKeyDown);
   },
   mounted() {
     this.width = this.$refs.bc.clientWidth;
