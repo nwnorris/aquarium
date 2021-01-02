@@ -121,7 +121,6 @@ class AquariumPuzzle {
         block.splice(block.indexOf(squareID), 1);
       }
       this.blockMembership[squareID] = this.activeBlockId;
-      console.log(this.blockMembership[squareID]);
       this.activeBlock.push(squareID);
       //  Bidirectional connection reference
       Object.entries(conn).forEach((item) => {
@@ -135,8 +134,11 @@ class AquariumPuzzle {
 
   //  Take square that is part of another block and join it to the active block
   stealSquare(squareID) {
+    const squareOldBlock = this.blockMembership[squareID];
     this.removeSquareFromBlock(squareID);
     this.addSquare(squareID);
+    //  Make sure other modified block isn't invalid after removal of square
+    this.splitIntoMultipleValidBlocks(this.blocks[squareOldBlock]);
   }
 
   //  Assume that sid was already checked to be a member of the active block.
@@ -171,21 +173,48 @@ class AquariumPuzzle {
     this.activeBlock = this.blocks[this.activeBlockId];
   }
 
+  //  Save active block, recursively saving disconnected blocks as new blocks.
+  //  This can easily happen if editing a block or stealing from another blocks
+  //  removes connectivity between all members of the block.
+  splitIntoMultipleValidBlocks(block) {
+    if (block.length > 0) {
+      // Deep copy, block is always just int array (no JSON issues)
+      const b = JSON.parse(JSON.stringify(block));
+      const connected = [b[0]];
+      const newBlock = [b[0]];
+      while (connected.length > 0) {
+        const square = connected.pop();
+        b.splice(b.indexOf(square), 1);
+        Object.values(this.connections[square]).forEach((item) => {
+          if (newBlock.indexOf(item) === -1) {
+            newBlock.push(item);
+            connected.push(item);
+          }
+        });
+      }
+      //  Reassign squares to new block
+      this.blocks.push(JSON.parse(JSON.stringify(newBlock)));
+      newBlock.forEach((square) => {
+        this.blockMembership[square] = this.blocks.length - 1;
+      });
+      this.splitIntoMultipleValidBlocks(b);
+    }
+  }
+
   nextBlock() {
-    this.saveActiveBlock();
+    //  Possible for active block to have been edited into an invalid block state,
+    //  might need to split into multiple blocks.
+    this.splitIntoMultipleValidBlocks(this.activeBlock);
     this.newBlock();
+  }
+
+  saveActiveBlock() {
+    this.splitIntoMultipleValidBlocks(this.activeBlock);
   }
 
   newBlock() {
     this.activeBlock = [];
     this.activeBlockId = this.blocks.length;
-  }
-
-  saveActiveBlock() {
-    this.blocks.push(this.activeBlock);
-    this.activeBlock.forEach((squareID) => {
-      this.blockMembership[squareID] = this.activeBlockId;
-    });
   }
 
   toJSON() {
