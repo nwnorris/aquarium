@@ -1,14 +1,30 @@
 <template>
   <div class="board-container" ref="bc" @keyup='nextBlock'>
-    <div class="board-holder" ref="holder" :style='computedStyle'>
-      <AquariumBoardSquare
-      :width='squareSize'
-      :height='squareSize'
-      v-for="sq in squares"
-      :key="sq.id"
-      :id="sq.id"
-      :square='sq'
-      @square-select='squareSelect'/>
+    <div class="constraint-y-holder">
+      <AquariumConstraintSquare
+        :width='squareSize'
+        :height='squareSize'
+        v-for='(col, i) in constraints.y'
+        :key='i' />
+    </div>
+    <div class="board-row-2">
+      <div class="constraint-x-holder">
+          <AquariumConstraintSquare
+            :width='squareSize'
+            :height='squareSize'
+            v-for='(col, i) in constraints.x'
+            :key = 'i'/>
+      </div>
+      <div class="board-holder" ref="holder" :style='boardSquareStyle'>
+        <AquariumBoardSquare
+        :width='squareSize'
+        :height='squareSize'
+        v-for="sq in squares"
+        :key="sq.id"
+        :id="sq.id"
+        :square='sq'
+        @square-select='squareSelect'/>
+      </div>
     </div>
   </div>
 </template>
@@ -16,12 +32,14 @@
 <script>
 import AquariumBoardSquare from './AquariumBoardSquare.vue';
 import AquariumPuzzle from '../js/AquariumPuzzle';
+import AquariumConstraintSquare from './AquariumConstraintSquare.vue';
 import '../css/AquariumBoard.css';
 
 export default {
   name: 'AquariumBoard',
   components: {
     AquariumBoardSquare,
+    AquariumConstraintSquare,
   },
   props: {
     boardWidth: Number,
@@ -31,6 +49,7 @@ export default {
     return {
       squareSize: this.squareSize,
       squares: this.squares,
+      constraints: this.constraints,
     };
   },
   methods: {
@@ -69,19 +88,22 @@ export default {
     },
   },
   computed: {
-    computedStyle() {
+    boardSquareStyle() {
       const size = this.squareSize ? this.squareSize : 0;
-      const width = `width: ${size * this.$props.boardWidth}px;`;
-      const height = `height: ${size * this.$props.boardWidth}px;`;
+      const width = `min-width: ${size * this.$props.boardWidth}px;`;
+      const maxwidth = `max-width: ${size * this.$props.boardWidth}px;`;
+      const height = `min-height: ${size * this.$props.boardWidth}px;`;
+      const maxheight = `max-height: ${size * this.$props.boardWidth}px;`;
       const col = `grid-template-columns: repeat(${this.boardWidth}, 1fr);`;
       const row = `grid-template-rows: repeat(${this.boardHeight}, 1fr);`;
-      return [width, height, col, row].join(' ');
+      return [width, height, maxwidth, maxheight, col, row].join(' ');
     },
   },
   created() {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
+    this.constraints = this.puzzle.constraints;
+    console.log(this.constraints);
     this.shiftPressed = false;
-    console.log(this.boardWidth, this.boardHeight);
     //  Add event listeners that Vue can't normally handle (key events on non-form/input elemenmts)
     document.addEventListener('keyup', this.handleKeyUp);
     document.addEventListener('keydown', this.handleKeyDown);
@@ -94,8 +116,8 @@ export default {
     this.width = this.$refs.bc.clientWidth;
     this.height = this.$refs.bc.clientHeight;
     this.squareSize = this.width < this.height
-      ? Math.floor(this.width / this.boardWidth)
-      : Math.floor(this.height / this.boardHeight);
+      ? Math.floor(this.width / (this.boardWidth + 1))
+      : Math.floor(this.height / (this.boardHeight + 1));
     this.squares = [];
     const puzz = this.puzzle;
     for (let i = 0; i < (this.boardWidth * this.boardHeight); i += 1) {
@@ -118,5 +140,4 @@ export default {
 </script>
 
 <style lang="css" scoped>
-
 </style>
