@@ -143,6 +143,7 @@ class AquariumPuzzle {
     this.addSquare(squareID);
     //  Make sure other modified block isn't invalid after removal of square
     this.splitIntoMultipleValidBlocks(this.blocks[squareOldBlock]);
+    console.log(this.blocks);
   }
 
   //  Assume that sid was already checked to be a member of the active block.
@@ -175,6 +176,7 @@ class AquariumPuzzle {
     this.saveActiveBlock();
     this.activeBlockId = this.blockMembership[squareId];
     this.activeBlock = this.blocks[this.activeBlockId];
+    console.log(`selecting block ${this.activeBlockId}`);
   }
 
   //  Save active block, recursively saving disconnected blocks as new blocks.
@@ -196,12 +198,17 @@ class AquariumPuzzle {
           }
         });
       }
-      //  Reassign squares to new block
-      this.blocks.push(JSON.parse(JSON.stringify(newBlock)));
-      newBlock.forEach((square) => {
-        this.blockMembership[square] = this.blocks.length - 1;
-      });
-      this.splitIntoMultipleValidBlocks(b);
+      //  No need to change anything if original block is contiguous
+      const oldlen = this.blocks[this.blockMembership[newBlock[0]]];
+      const compare = oldlen || [];
+      if (newBlock.length !== compare.length) {
+        //  Reassign squares to new block
+        this.blocks.push(JSON.parse(JSON.stringify(newBlock)));
+        newBlock.forEach((square) => {
+          this.blockMembership[square] = this.blocks.length - 1;
+        });
+        this.splitIntoMultipleValidBlocks(b);
+      }
     }
   }
 

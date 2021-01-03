@@ -66,7 +66,6 @@ export default {
   },
   methods: {
     getCornerSizeX() {
-      console.log(`width: ${this.width} squareSize: ${this.squareSize}`);
       return this.cornerX;
     },
     getCornerSizeY() {
@@ -123,7 +122,6 @@ export default {
   created() {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
     this.constraints = this.puzzle.constraints;
-    console.log(this.constraints);
     this.shiftPressed = false;
     //  Add event listeners that Vue can't normally handle (key events on non-form/input elemenmts)
     document.addEventListener('keyup', this.handleKeyUp);
@@ -137,13 +135,11 @@ export default {
     this.width = this.$refs.holder.clientWidth;
     this.height = this.$refs.holder.clientHeight;
     this.cornerX = this.$refs.cx.clientWidth;
-    console.log(this.width, this.height);
     this.squareSize = this.width < this.height
       ? Math.floor((this.width) / (this.boardWidth))
       : Math.floor((this.height) / (this.boardHeight));
     this.gutterSizeY = this.width * 0.1;
     this.gutterSizeX = this.width * 0.1;
-    console.log(this.squareSize);
     this.squares = [];
     const puzz = this.puzzle;
     for (let i = 0; i < (this.boardWidth * this.boardHeight); i += 1) {
