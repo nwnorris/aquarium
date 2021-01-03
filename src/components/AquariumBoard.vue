@@ -2,20 +2,30 @@
   <div class="board-container" ref="bc" @keyup='nextBlock'>
     <div class="constraint-y-holder">
       <AquariumConstraintSquare
+        :width='this.getCornerSizeX()'
+        height='cornerSizeY'
+        type = 'corner'/>
+      <AquariumConstraintSquare
         :width='squareSize'
         :height='squareSize'
         v-for='(col, i) in constraints.y'
-        :key='i' />
+        :key='i'
+        :index='i'
+        :parent='constraints.y'
+        type = 'y'/>
     </div>
-    <div class="board-row-2">
-      <div class="constraint-x-holder">
+    <div class="board-row-2" ref="holder">
+      <div class="constraint-x-holder" ref="cx">
           <AquariumConstraintSquare
             :width='squareSize'
             :height='squareSize'
             v-for='(col, i) in constraints.x'
-            :key = 'i'/>
+            :key = 'i'
+            :index='i'
+            :parent='constraints.x'
+            type = 'x'/>
       </div>
-      <div class="board-holder" ref="holder" :style='boardSquareStyle'>
+      <div class="board-holder" :style='boardSquareStyle'>
         <AquariumBoardSquare
         :width='squareSize'
         :height='squareSize'
@@ -50,9 +60,18 @@ export default {
       squareSize: this.squareSize,
       squares: this.squares,
       constraints: this.constraints,
+      cornerSizeX: this.getCornerSizeX(),
+      cornerSizeY: this.getCornerSizeY(),
     };
   },
   methods: {
+    getCornerSizeX() {
+      console.log(`width: ${this.width} squareSize: ${this.squareSize}`);
+      return this.cornerX;
+    },
+    getCornerSizeY() {
+      return this.height - (this.squareSize * this.boardHeight);
+    },
     squareSelect(squareID) {
       const sid = parseInt(squareID, 10);
       this.puzzle.handleSquare(sid);
@@ -90,13 +109,15 @@ export default {
   computed: {
     boardSquareStyle() {
       const size = this.squareSize ? this.squareSize : 0;
-      const width = `min-width: ${size * this.$props.boardWidth}px;`;
+      //  const width = `min-width: ${size * this.$props.boardWidth}px;`;
+      //  const height = `min-height: ${size * this.$props.boardWidth}px;`;
       const maxwidth = `max-width: ${size * this.$props.boardWidth}px;`;
-      const height = `min-height: ${size * this.$props.boardWidth}px;`;
       const maxheight = `max-height: ${size * this.$props.boardWidth}px;`;
+      const minwidth = `min-width: ${size * this.$props.boardWidth}px;`;
+      const minheight = `min-height: ${size * this.$props.boardWidth}px;`;
       const col = `grid-template-columns: repeat(${this.boardWidth}, 1fr);`;
       const row = `grid-template-rows: repeat(${this.boardHeight}, 1fr);`;
-      return [width, height, maxwidth, maxheight, col, row].join(' ');
+      return [maxwidth, maxheight, minwidth, minheight, col, row].join(' ');
     },
   },
   created() {
@@ -113,11 +134,16 @@ export default {
     document.removeEventListener('keydown', this.handleKeyDown);
   },
   mounted() {
-    this.width = this.$refs.bc.clientWidth;
-    this.height = this.$refs.bc.clientHeight;
+    this.width = this.$refs.holder.clientWidth;
+    this.height = this.$refs.holder.clientHeight;
+    this.cornerX = this.$refs.cx.clientWidth;
+    console.log(this.width, this.height);
     this.squareSize = this.width < this.height
-      ? Math.floor(this.width / (this.boardWidth + 1))
-      : Math.floor(this.height / (this.boardHeight + 1));
+      ? Math.floor((this.width) / (this.boardWidth))
+      : Math.floor((this.height) / (this.boardHeight));
+    this.gutterSizeY = this.width * 0.1;
+    this.gutterSizeX = this.width * 0.1;
+    console.log(this.squareSize);
     this.squares = [];
     const puzz = this.puzzle;
     for (let i = 0; i < (this.boardWidth * this.boardHeight); i += 1) {

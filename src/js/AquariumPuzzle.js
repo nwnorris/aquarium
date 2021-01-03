@@ -12,8 +12,8 @@ class AquariumPuzzle {
       this.newBlock();
       this.connections = {};
       this.constraints = {
-        x: Array.from('0'.repeat(this.width)).map((i) => parseInt(i, 10)),
-        y: Array.from('0'.repeat(this.height + 1)).map((i) => parseInt(i, 10)),
+        x: Array.from('1'.repeat(this.width)).map((i) => parseInt(i, 10)),
+        y: Array.from('1'.repeat(this.height)).map((i) => parseInt(i, 10)),
       };
       //  Initialize connection list
       [...Array(this.numSquares).keys()].forEach((index) => {
