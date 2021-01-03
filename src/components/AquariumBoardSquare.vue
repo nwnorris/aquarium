@@ -1,5 +1,5 @@
 <template>
-  <div class="square-container" v-on:click='handleClick($event)' :style='style'>
+  <div class="square-container" :style='style'>
 
   </div>
 </template>
@@ -9,9 +9,6 @@ export default {
   name: 'AquariumBoardSquare',
   props: ['width', 'height', 'square'],
   methods: {
-    handleClick(event) {
-      this.$emit('square-select', event.target.id);
-    },
   },
   mounted() {
     this.id = this.square.id;

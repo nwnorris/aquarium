@@ -109,7 +109,10 @@ class AquariumPuzzle {
       }
     } else if (this.activeBlock.indexOf(squareID) >= 0) {
       this.removeSquare(squareID);
+    } else if (this.canBeAddedToActiveBlock(squareID)[0]) {
+      this.addSquare(squareID);
     } else {
+      this.nextBlock();
       this.addSquare(squareID);
     }
   }
@@ -143,7 +146,6 @@ class AquariumPuzzle {
     this.addSquare(squareID);
     //  Make sure other modified block isn't invalid after removal of square
     this.splitIntoMultipleValidBlocks(this.blocks[squareOldBlock]);
-    console.log(this.blocks);
   }
 
   //  Assume that sid was already checked to be a member of the active block.
@@ -176,7 +178,6 @@ class AquariumPuzzle {
     this.saveActiveBlock();
     this.activeBlockId = this.blockMembership[squareId];
     this.activeBlock = this.blocks[this.activeBlockId];
-    console.log(`selecting block ${this.activeBlockId}`);
   }
 
   //  Save active block, recursively saving disconnected blocks as new blocks.

@@ -32,8 +32,7 @@
         v-for="sq in squares"
         :key="sq.id"
         :id="sq.id"
-        :square='sq'
-        @square-select='squareSelect'/>
+        :square='sq'/>
       </div>
     </div>
   </div>
@@ -101,6 +100,36 @@ export default {
           break;
       }
     },
+    handleMouseDown(e) {
+      switch (e.button) {
+        case 0:
+          this.dragging = true;
+          [this.dragActiveSquare] = e.path;
+          this.squareSelect(this.dragActiveSquare.id);
+          break;
+        default:
+          break;
+      }
+    },
+    handleMouseUp(e) {
+      switch (e.button) {
+        case 0:
+          this.dragging = false;
+          this.dragActiveSquare = null;
+          break;
+        default:
+          break;
+      }
+    },
+    handleMouseMove(e) {
+      if (this.dragging) {
+        const [hoveredSquare] = e.path;
+        if (hoveredSquare !== this.dragActiveSquare) {
+          this.dragActiveSquare = hoveredSquare;
+          this.squareSelect(this.dragActiveSquare.id);
+        }
+      }
+    },
     nextBlock() {
       this.puzzle.nextBlock();
     },
@@ -123,9 +152,13 @@ export default {
     this.puzzle = new AquariumPuzzle(this.boardWidth, this.boardHeight);
     this.constraints = this.puzzle.constraints;
     this.shiftPressed = false;
+    this.dragging = false;
     //  Add event listeners that Vue can't normally handle (key events on non-form/input elemenmts)
     document.addEventListener('keyup', this.handleKeyUp);
     document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('mousedown', this.handleMouseDown);
+    document.addEventListener('mouseup', this.handleMouseUp);
+    document.addEventListener('mousemove', this.handleMouseMove);
   },
   destroyed() {
     document.removeEventListener('keyup', this.handleKeyUp);
